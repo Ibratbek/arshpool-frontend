@@ -1,9 +1,17 @@
 import ProductDetail from "@/components/elements/product-detail";
 import ProductSlider from "@/components/elements/product-slider";
-import { ProductDetailType } from "@/types/product";
+import { getProductDetail, getProductIds } from "@/lib/data";
+import { routing } from "@/i18n/routing";
+import { setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
 import { Metadata, ResolvingMetadata } from "next";
 
-const url = process.env.NEXT_PUBLIC_API_URL;
+export function generateStaticParams() {
+  return routing.locales.flatMap((locale) =>
+    // Next requires at least one param for static export; "0" renders 404 when no products exist.
+    (getProductIds().length ? getProductIds() : ["0"]).map((id) => ({ locale, id }))
+  );
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ id: string, locale: "uz" | "ru" }> },
@@ -12,10 +20,8 @@ export async function generateMetadata(
   const locale = (await params).locale
   const id = (await params).id
 
-  // fetch data
-  const data: ProductDetailType = await fetch(
-    `${url}/api/v1/product/products/${id}`
-  ).then((res) => res.json());
+  const data = getProductDetail(id);
+  if (!data) return {};
 
   // optionally access and extend (rather than replace) parent metadata
   const previousImages = (await parent).openGraph?.images || []
@@ -36,9 +42,9 @@ export default async function Product({
 }): Promise<React.ReactElement> {
 
   const id = (await params).id;
-  const data: ProductDetailType = await fetch(
-    `${url}/api/v1/product/products/${id}`
-  ).then((res) => res.json());
+  setRequestLocale((await params).locale);
+  const data = getProductDetail(id);
+  if (!data) notFound();
 
   return (
     <main className="max-md:px-3">

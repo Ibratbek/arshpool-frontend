@@ -1,4 +1,5 @@
 "use client";
+import { getLandingProducts } from "@/lib/data";
 
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -52,11 +53,9 @@ export default function Products(): React.ReactElement {
 
   useEffect(() => {
     // Fetch products
-    const url = process.env.NEXT_PUBLIC_API_URL;
-    async function fetchPosts() {
-      const res = await fetch(`${url}/api/v1/product/products/landing/`);
-      const data = await res.json();
-      if (data.length % 2 == 0) {
+    function fetchPosts() {
+      const data = getLandingProducts() as unknown as ProductType[];
+      if (data.length > 0 && data.length % 2 == 0) {
         setData(data.concat(data[0]));
       } else {
         setData(data);

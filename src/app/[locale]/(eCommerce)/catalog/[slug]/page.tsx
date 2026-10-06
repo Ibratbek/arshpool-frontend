@@ -1,7 +1,17 @@
 import React from "react";
 import Link from "@/components/elements/navigation";
 import ProductCard from "@/components/elements/product-card";
-import { CategoryType } from "@/types/product";
+import { getCategoryDetail, getCategoryIds } from "@/lib/data";
+import { routing } from "@/i18n/routing";
+import { setRequestLocale } from "next-intl/server";
+import { notFound } from "next/navigation";
+
+export function generateStaticParams() {
+  return routing.locales.flatMap((locale) =>
+    // Next requires at least one param for static export; "0" renders 404 when no categories exist.
+    (getCategoryIds().length ? getCategoryIds() : ["0"]).map((slug) => ({ locale, slug }))
+  );
+}
 
 export default async function Catalog({ params }: { params: Promise<{ slug: string, locale: "uz" | "ru" }> }) {
   const { locale } = await params;
@@ -9,10 +19,9 @@ export default async function Catalog({ params }: { params: Promise<{ slug: stri
 
   const title = locale === "uz" ? "Mahsulotlar" : "Товары";
 
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  const data: CategoryType = await fetch(
-    `${url}/api/v1/product/category/${slug}`
-  ).then((res) => res.json());
+  setRequestLocale(locale);
+  const data = getCategoryDetail(slug);
+  if (!data) notFound();
   return (
     <main className="max-md:px-3">
       <div className="container">

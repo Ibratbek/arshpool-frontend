@@ -4,22 +4,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin();
 
 const nextConfig = {
+  output: "export",
+  trailingSlash: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "127.0.0.1",
-        port: "8000",
-        pathname: "/media/**",
-        search: "",
-      },
-      {
-        protocol: "https",
-        hostname: "api.arshpool.uz",
-        pathname: "/media/**",
-        search: "",
-      },
-    ],
+    unoptimized: true,
   },
 };
 

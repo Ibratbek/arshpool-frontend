@@ -1,6 +1,13 @@
-import { ProductListType } from "@/types/product";
+import { getProducts } from "@/lib/data";
+import { routing } from "@/i18n/routing";
+import { setRequestLocale } from "next-intl/server";
+import { Suspense } from "react";
 import ProductFilterGrid from "@/components/elements/product-filter-grid";
 import { Metadata, ResolvingMetadata } from "next";
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: "uz" | "ru" }> },
@@ -22,17 +29,15 @@ export async function generateMetadata(
   }
 }
 
-export default async function Products({ params, searchParams }: { params: Promise<{ locale: "uz" | "ru" }>, searchParams: Promise<Record<string, string>> }) {
+export default async function Products({ params }: { params: Promise<{ locale: "uz" | "ru" }> }) {
   const locale = (await params).locale;
-  const search = new URLSearchParams(await searchParams);
-
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  const data: ProductListType[] = await fetch(`${url}/api/v1/product/products/?${search.toString()}`).then(
-    (res) => res.json()
-  );
+  setRequestLocale(locale);
+  const data = getProducts();
   return (
     <main className="max-md:px-3">
-      <ProductFilterGrid data={data} locale={locale} />
+      <Suspense>
+        <ProductFilterGrid data={data} locale={locale} />
+      </Suspense>
     </main>
   );
 }

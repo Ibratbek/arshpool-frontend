@@ -1,9 +1,15 @@
 import React from "react";
 import { PageParamsType } from "@/types/page";
-import { GallaryType } from "@/types/gallary";
+import { getProjects } from "@/lib/data";
+import { routing } from "@/i18n/routing";
+import { setRequestLocale } from "next-intl/server";
 import Image from "next/image";
 
 import GallaryGrid from "@/components/elements/gallary-grid";
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
 export default async function Gallary({
   params,
@@ -11,12 +17,8 @@ export default async function Gallary({
   params: Promise<{ slug?: string; locale: "uz" | "ru" }>;
 }): Promise<React.ReactElement> {
   const locale = (await params).locale as "uz" | "ru";
-  const slug = (await params).slug;
-
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  const data: GallaryType[] = await fetch(
-    `${url}/api/v1/landing/projects/?current=${slug ?? ""}`
-  ).then((res) => res.json());
+  setRequestLocale(locale);
+  const data = getProjects();
   return (
     <main className="max-md:px-3">
       <div className="container flex flex-col gap-4 mb-16">

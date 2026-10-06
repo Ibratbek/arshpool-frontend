@@ -1,4 +1,7 @@
 import { CategoryType } from "@/types/product";
+import { getCategories } from "@/lib/data";
+import { routing } from "@/i18n/routing";
+import { setRequestLocale } from "next-intl/server";
 import { Metadata, ResolvingMetadata } from "next";
 import { cn } from "@/lib/utils";
 import Link from "@/components/elements/navigation";
@@ -24,13 +27,15 @@ import Link from "@/components/elements/navigation";
 //     }
 //   }
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export default async function Catalog({ params }: { params: Promise<{ locale: "uz" | "ru" }> }) {
   const locale = (await params).locale;
 
-  const url = process.env.NEXT_PUBLIC_API_URL;
-  const data: CategoryType[] = await fetch(
-    `${url}/api/v1/product/category/`
-  ).then((res) => res.json());
+  setRequestLocale(locale);
+  const data = getCategories();
   const mainCategories = data.filter((category) => category.status === "M");
   const additionalCategories = data.filter(
     (category) => category.status === "A"

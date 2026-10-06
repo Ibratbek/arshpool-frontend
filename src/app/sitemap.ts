@@ -1,6 +1,8 @@
 import {MetadataRoute} from 'next';
 import {Locale, getPathname, routing} from '@/i18n/routing';
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [getEntry('/'), getEntry('/products'), getEntry('/catalog')];
 }
